@@ -82,7 +82,7 @@ RUN set -eux; \
 # Configure Nginx
 RUN echo ' \
 server { \
-    listen 9393; \
+    listen 8080; \
     root /var/www/api/public; \
     index index.php index.html index.htm; \
     server_name _; \
@@ -116,7 +116,7 @@ RUN php bin/console assets:install --symlink
 RUN php bin/console cache:clear
 
 # Expose port
-EXPOSE 9393
+EXPOSE 8080
 
 # Start Nginx and PHP-FPM with logging
 CMD service php7.4-fpm start && \
