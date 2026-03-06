@@ -67,6 +67,9 @@ RUN set -eux; \
 # Copy rest of the application
 COPY . .
 
+# Compile swetest binary
+RUN cd swetest/src && make clean && make swetest && chmod +x swetest
+
 # After copying application files but before clearing cache
 RUN mkdir -p /var/www/api/var/cache /var/www/api/var/log && \
     chown -R www-data:www-data /var/www/api/var && \
@@ -81,8 +84,8 @@ RUN set -eux; \
 
 # Configure Nginx
 RUN echo ' \
-server { \
-    listen 9393; \
+    server { \
+    listen 8080; \
     root /var/www/api/public; \
     index index.php index.html index.htm; \
     server_name _; \
@@ -91,17 +94,23 @@ server { \
     error_log /var/log/nginx/error.log; \
     \
     location / { \
-        try_files $uri $uri/ /index.php?$query_string; \
+    try_files $uri $uri/ /index.php?$query_string; \
     } \
     \
     location ~ \.php$ { \
-        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; \
-        fastcgi_index index.php; \
-        include fastcgi_params; \
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+    fastcgi_pass 127.0.0.1:9000; \
+    fastcgi_index index.php; \
+    include fastcgi_params; \
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
     } \
-}' > /etc/nginx/sites-available/default
+    }' > /etc/nginx/sites-available/default
 
+# Configure PHP-FPM to listen on TCP port 9000 and increase workers
+# pm.max_children is set to 40 based on expected peak concurrency and container memory limits;
+# adjust this value if workload characteristics or memory constraints change.
+RUN sed -i 's/listen = .*/listen = 127.0.0.1:9000/' /etc/php/7.4/fpm/pool.d/www.conf && \
+    sed -i 's/pm.max_children = .*/pm.max_children = 40/' /etc/php/7.4/fpm/pool.d/www.conf
+    
 # Configure PHP-FPM logging
 RUN sed -i 's/;error_log = php_errors.log/error_log = \/var\/log\/php7.4-fpm.log/' /etc/php/7.4/fpm/php-fpm.conf
 
@@ -116,7 +125,7 @@ RUN php bin/console assets:install --symlink
 RUN php bin/console cache:clear
 
 # Expose port
-EXPOSE 9393
+EXPOSE 8080
 
 # Start Nginx and PHP-FPM with logging
 CMD service php7.4-fpm start && \
