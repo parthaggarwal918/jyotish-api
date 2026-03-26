@@ -196,6 +196,16 @@ class Image extends AbstractRenderer
         imagedestroy($this->Resource);
     }
 
+    /**
+     * Return the PNG content as a string.
+     */
+    public function getContent(): string
+    {
+        ob_start();
+        imagepng($this->Resource);
+        return ob_get_clean();
+    }
+
     private function allocateColor($image, $r, $g, $b, $alpha = 100)
     {
         $alphaValue = (127 / 100) * (100 - $alpha);

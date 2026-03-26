@@ -162,6 +162,14 @@ class Svg extends AbstractRenderer
         echo $this->Resource->saveXML();
     }
 
+    /**
+     * Return the SVG content as a string.
+     */
+    public function getContent(): string
+    {
+        return $this->Resource->saveXML();
+    }
+
     private function appendRootElement($tagName, array $attributes = [], $textContent = null)
     {
         $newElement = $this->createElement($tagName, $attributes, $textContent);

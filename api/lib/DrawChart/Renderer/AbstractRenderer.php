@@ -144,4 +144,9 @@ abstract class AbstractRenderer
      * Render the drawing.
      */
     abstract public function render();
+
+    /**
+     * Return the drawing content as a string.
+     */
+    abstract public function getContent(): string;
 }

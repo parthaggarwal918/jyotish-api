@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a14">
+  <meta name="description" content="Vedic Jyotish chart calculator — birth chart, dasha periods, planet positions">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Jyotish — Vedic Chart</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a14;
+      --surface:  #111128;
+      --card:     #16162e;
+      --border:   #252548;
+      --border-h: #3a3a68;
+      --gold:     #c8a84b;
+      --gold-dim: #7a6228;
+      --text:     #e2e2f0;
+      --muted:    #7878a0;
+      --accent:   #6644bb;
+      --green:    #44bb88;
+      --red:      #bb4455;
+      --radius:   8px;
+      --transition: 0.2s ease;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,20,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+    }
+
+    header nav { display: flex; gap: 8px; }
+    header nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      transition: color var(--transition), background var(--transition);
+    }
+    header nav a:hover { color: var(--text); background: var(--surface); }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+    /* ── Input section ── */
+    #input-section {
+      padding: 40px 0 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #input-section h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #chart-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .form-row { display: flex; gap: 8px; }
+    .form-row input, .form-row select { flex: 1; min-width: 0; }
+
+    input, select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 9px 12px;
+      font-size: 14px;
+      width: 100%;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px rgba(200,168,75,0.12);
+    }
+    input::placeholder { color: var(--muted); }
+
+    select option { background: var(--card); color: var(--text); }
+
+    /* ── Style selector ── */
+    .style-selector { display: flex; gap: 6px; }
+    .style-btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      padding: 9px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition);
+      letter-spacing: 0.04em;
+    }
+    .style-btn.active, .style-btn:hover {
+      border-color: var(--gold-dim);
+      color: var(--gold);
+      background: rgba(200,168,75,0.07);
+    }
+
+    /* ── Action buttons ── */
+    .form-actions { display: flex; gap: 10px; align-items: flex-end; grid-column: 1 / -1; }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: #0a0a14;
+    }
+    .btn-primary:hover { background: #d9b85c; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--border-h); background: var(--card); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      font-size: 12px;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-h); }
+
+    /* ── Loading ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(200,168,75,0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Results ── */
+    #results-section { padding: 32px 0 48px; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .results-title-area h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .results-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .results-actions { display: flex; gap: 8px; }
+
+    /* ── Chart layout ── */
+    .chart-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 720px) { .chart-layout { grid-template-columns: 1fr; } }
+
+    .chart-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .chart-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-tab {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all var(--transition);
+    }
+    .chart-tab.active, .chart-tab:hover { color: var(--gold); border-bottom-color: var(--gold); }
+
+    #chart-svg-container {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 320px;
+    }
+
+    #chart-svg-container svg {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .chart-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 48px;
+    }
+    .chart-loading .spinner { display: block; width: 32px; height: 32px; }
+
+    /* ── Data panel ── */
+    .data-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    /* ── Lagna badge ── */
+    .lagna-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+    .lagna-sign-icon {
+      width: 44px; height: 44px;
+      background: rgba(200,168,75,0.1);
+      border: 1px solid var(--gold-dim);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+    .lagna-details { flex: 1; }
+    .lagna-sign-name { font-size: 16px; font-weight: 700; color: var(--text); }
+    .lagna-deg { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .lagna-nakshatra { font-size: 12px; color: var(--gold); margin-top: 2px; }
+
+    /* ── Planets table ── */
+    .planets-table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      background: var(--surface);
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 0; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background var(--transition);
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    tbody td {
+      padding: 9px 12px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .planet-abbr {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--gold);
+      width: 28px;
+      display: inline-block;
+    }
+    .planet-name { color: var(--muted); font-size: 12px; }
+    .retro-badge {
+      font-size: 10px;
+      color: var(--red);
+      font-weight: 700;
+      background: rgba(187,68,85,0.12);
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .house-badge {
+      display: inline-block;
+      width: 22px; height: 22px;
+      line-height: 22px;
+      text-align: center;
+      background: rgba(102,68,187,0.18);
+      color: #a088ee;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .deg-text { font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); }
+    .sign-text { font-size: 12px; }
+    .nakshatra-text { font-size: 11px; color: var(--muted); }
+
+    /* ── Dasha section ── */
+    .dasha-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .dasha-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dasha-header h3 { font-size: 13px; font-weight: 700; color: var(--text); }
+    .current-dasha-label { font-size: 11px; color: var(--muted); }
+
+    .dasha-current-banner {
+      padding: 14px 20px;
+      background: rgba(200,168,75,0.06);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .dasha-current-lord {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold);
+      width: 60px;
+      text-align: center;
+    }
+    .dasha-current-info { flex: 1; }
+    .dasha-current-name { font-size: 15px; font-weight: 600; color: var(--text); }
+    .dasha-current-period { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .dasha-progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .dasha-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .dasha-table-wrap { overflow-x: auto; padding: 0 0 8px; }
+
+    /* ── Share toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── Error ── */
+    .error-banner {
+      background: rgba(187,68,85,0.1);
+      border: 1px solid rgba(187,68,85,0.3);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: #ee8899;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .error-banner.show { display: block; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    footer a { color: var(--gold-dim); text-decoration: none; }
+    footer a:hover { color: var(--gold); }
+
+    /* ── Utilities ── */
+    .hidden { display: none !important; }
+    .text-gold { color: var(--gold); }
+    .text-muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="/">☽ Jyotish</a>
+  <nav>
+    <a href="#input-section">New Chart</a>
+    <a href="/api/doc" target="_blank">API</a>
+  </nav>
+</header>
+
+<!-- ── Input Section ── -->
+<section id="input-section">
+  <div class="container">
+    <h1>☿ Vedic Birth Chart</h1>
+
+    <form id="chart-form" autocomplete="off">
+
+      <div class="form-group">
+        <label>Name (optional)</label>
+        <input type="text" id="f-name" placeholder="e.g. Arjuna" maxlength="80">
+      </div>
+
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <div class="form-row">
+          <input type="number" id="f-year"  placeholder="Year"  min="1" max="2100" value="1990">
+          <select id="f-month" style="flex:1.2">
+            <option value="1">Jan</option><option value="2">Feb</option>
+            <option value="3">Mar</option><option value="4">Apr</option>
+            <option value="5">May</option><option value="6" selected>Jun</option>
+            <option value="7">Jul</option><option value="8">Aug</option>
+            <option value="9">Sep</option><option value="10">Oct</option>
+            <option value="11">Nov</option><option value="12">Dec</option>
+          </select>
+          <input type="number" id="f-day"   placeholder="Day"   min="1" max="31" value="15">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Time of Birth</label>
+        <div class="form-row">
+          <input type="number" id="f-hour" placeholder="Hour" min="0" max="23" value="12">
+          <input type="number" id="f-min"  placeholder="Min"  min="0" max="59" value="0">
+          <input type="number" id="f-sec"  placeholder="Sec"  min="0" max="59" value="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Location (Lat / Lon)</label>
+        <div class="form-row">
+          <input type="number" id="f-lat" placeholder="Latitude"  step="0.0001" value="35.6892">
+          <input type="number" id="f-lon" placeholder="Longitude" step="0.0001" value="51.3890">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Timezone (UTC offset)</label>
+        <select id="f-tz">
+          <option value="-12:00">UTC−12:00</option>
+          <option value="-11:00">UTC−11:00</option>
+          <option value="-10:00">UTC−10:00 — Hawaii</option>
+          <option value="-09:30">UTC−09:30</option>
+          <option value="-09:00">UTC−09:00 — Alaska</option>
+          <option value="-08:00">UTC−08:00 — Pacific (US)</option>
+          <option value="-07:00">UTC−07:00 — Mountain (US)</option>
+          <option value="-06:00">UTC−06:00 — Central (US)</option>
+          <option value="-05:00">UTC−05:00 — Eastern (US)</option>
+          <option value="-04:00">UTC−04:00 — Atlantic / Brazil</option>
+          <option value="-03:30">UTC−03:30 — Newfoundland</option>
+          <option value="-03:00">UTC−03:00 — Argentina / São Paulo</option>
+          <option value="-02:00">UTC−02:00</option>
+          <option value="-01:00">UTC−01:00 — Azores</option>
+          <option value="+00:00">UTC+00:00 — London / Lisbon</option>
+          <option value="+01:00">UTC+01:00 — Paris / Berlin / Rome</option>
+          <option value="+02:00">UTC+02:00 — Cairo / Athens / Jerusalem</option>
+          <option value="+03:00">UTC+03:00 — Moscow / Nairobi / Baghdad</option>
+          <option value="+03:30" selected>UTC+03:30 — Tehran</option>
+          <option value="+04:00">UTC+04:00 — Dubai / Baku</option>
+          <option value="+04:30">UTC+04:30 — Kabul</option>
+          <option value="+05:00">UTC+05:00 — Karachi / Tashkent</option>
+          <option value="+05:30">UTC+05:30 — Mumbai / Delhi / Colombo</option>
+          <option value="+05:45">UTC+05:45 — Kathmandu</option>
+          <option value="+06:00">UTC+06:00 — Almaty / Dhaka</option>
+          <option value="+06:30">UTC+06:30 — Yangon</option>
+          <option value="+07:00">UTC+07:00 — Bangkok / Jakarta / Hanoi</option>
+          <option value="+08:00">UTC+08:00 — Beijing / Singapore / Perth</option>
+          <option value="+08:45">UTC+08:45</option>
+          <option value="+09:00">UTC+09:00 — Tokyo / Seoul</option>
+          <option value="+09:30">UTC+09:30 — Adelaide / Darwin</option>
+          <option value="+10:00">UTC+10:00 — Sydney / Melbourne</option>
+          <option value="+10:30">UTC+10:30</option>
+          <option value="+11:00">UTC+11:00 — Vladivostok</option>
+          <option value="+12:00">UTC+12:00 — Auckland / Fiji</option>
+          <option value="+13:00">UTC+13:00 — Samoa</option>
+          <option value="+14:00">UTC+14:00</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Chart Style</label>
+        <div class="style-selector">
+          <button type="button" class="style-btn active" data-style="north">◇ North</button>
+          <button type="button" class="style-btn"        data-style="south">□ South</button>
+          <button type="button" class="style-btn"        data-style="east">○ East</button>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="calc-btn">
+          <span class="spinner" id="calc-spinner"></span>
+          <span id="calc-btn-text">Calculate Chart</span>
+        </button>
+        <button type="button"  class="btn btn-secondary" id="now-btn">⟳ Transit Now</button>
+        <div style="flex:1"></div>
+        <button type="reset"   class="btn btn-ghost" id="reset-btn">Reset</button>
+      </div>
+
+      <div class="error-banner" id="error-banner"></div>
+
+    </form>
+  </div>
+</section>
+
+<!-- ── Results Section ── -->
+<section id="results-section" class="hidden">
+  <div class="container">
+
+    <div class="results-header">
+      <div class="results-title-area">
+        <h2 id="result-title">Chart</h2>
+        <div class="results-meta" id="result-meta"></div>
+      </div>
+      <div class="results-actions">
+        <button class="btn btn-ghost" id="share-btn">⎘ Share</button>
+        <button class="btn btn-ghost" id="scroll-up-btn">↑ New Chart</button>
+      </div>
+    </div>
+
+    <div class="chart-layout">
+
+      <!-- Left: SVG chart -->
+      <div class="chart-panel">
+        <div class="chart-tabs" id="chart-style-tabs">
+          <button class="chart-tab active" data-style="north">◇ North</button>
+          <button class="chart-tab"        data-style="south">□ South</button>
+          <button class="chart-tab"        data-style="east">○ East</button>
+        </div>
+        <div id="chart-svg-container">
+          <div class="chart-loading">
+            <div class="spinner"></div>
+            <span>Calculating chart…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: data panel -->
+      <div class="data-panel">
+
+        <!-- Ascendant card -->
+        <div class="panel-card" id="lagna-card">
+          <div class="panel-card-header">Ascendant (Lagna)</div>
+          <div class="lagna-badge">
+            <div class="lagna-sign-icon" id="lagna-icon">—</div>
+            <div class="lagna-details">
+              <div class="lagna-sign-name" id="lagna-sign">—</div>
+              <div class="lagna-deg"       id="lagna-deg">—</div>
+              <div class="lagna-nakshatra" id="lagna-nak">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Planet table card -->
+        <div class="panel-card">
+          <div class="panel-card-header">Planets</div>
+          <div class="planets-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Body</th>
+                  <th>Sign</th>
+                  <th>Degree</th>
+                  <th>H</th>
+                  <th>Nakshatra</th>
+                </tr>
+              </thead>
+              <tbody id="planets-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Dasha section -->
+    <div class="dasha-section">
+      <div class="dasha-header">
+        <h3>Vimshottari Dasha</h3>
+        <span class="current-dasha-label" id="current-dasha-label"></span>
+      </div>
+      <div class="dasha-current-banner" id="dasha-current-banner" style="display:none">
+        <div class="dasha-current-lord" id="dasha-lord-abbr">—</div>
+        <div class="dasha-current-info">
+          <div class="dasha-current-name"   id="dasha-lord-name">—</div>
+          <div class="dasha-current-period" id="dasha-lord-period">—</div>
+          <div class="dasha-progress-bar">
+            <div class="dasha-progress-fill" id="dasha-progress" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dasha-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lord</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Years</th>
+            </tr>
+          </thead>
+          <tbody id="dasha-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <p>Jyotish — Vedic Astrology Chart · <a href="/api/doc" target="_blank">API Docs</a></p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Constants ──────────────────────────────────────────────
+  const GRAHA = {
+    Su: 'Sun', Mo: 'Moon', Ma: 'Mars', Me: 'Mercury',
+    Ju: 'Jupiter', Ve: 'Venus', Sa: 'Saturn',
+    Ra: 'Rahu', Ke: 'Ketu', Ur: 'Uranus', Ne: 'Neptune', Pl: 'Pluto'
+  };
+
+  const RASHI = {
+    1: 'Aries', 2: 'Taurus', 3: 'Gemini', 4: 'Cancer',
+    5: 'Leo', 6: 'Virgo', 7: 'Libra', 8: 'Scorpio',
+    9: 'Sagittarius', 10: 'Capricorn', 11: 'Aquarius', 12: 'Pisces'
+  };
+
+  const RASHI_SYMBOL = {
+    1: '♈', 2: '♉', 3: '♊', 4: '♋',
+    5: '♌', 6: '♍', 7: '♎', 8: '♏',
+    9: '♐', 10: '♑', 11: '♒', 12: '♓'
+  };
+
+  const PLANET_ORDER = ['Lg', 'Su', 'Mo', 'Ma', 'Me', 'Ju', 'Ve', 'Sa', 'Ra', 'Ke'];
+
+  // ── DOM refs ───────────────────────────────────────────────
+  const form        = document.getElementById('chart-form');
+  const calcBtn     = document.getElementById('calc-btn');
+  const calcBtnText = document.getElementById('calc-btn-text');
+  const calcSpinner = document.getElementById('calc-spinner');
+  const nowBtn      = document.getElementById('now-btn');
+  const errorBanner = document.getElementById('error-banner');
+  const resultsSec  = document.getElementById('results-section');
+  const inputSec    = document.getElementById('input-section');
+  const toast       = document.getElementById('toast');
+
+  let currentParams  = null;
+  let currentStyle   = 'north';
+  let currentChartData = null;
+
+  // ── Form style buttons ─────────────────────────────────────
+  document.querySelectorAll('.style-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      currentStyle = this.dataset.style;
+    });
+  });
+
+  // ── Chart tab style buttons ────────────────────────────────
+  document.getElementById('chart-style-tabs').addEventListener('click', function (e) {
+    const tab = e.target.closest('.chart-tab');
+    if (!tab) return;
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentStyle = tab.dataset.style;
+    if (currentParams) loadChartSvg(currentParams, currentStyle);
+  });
+
+  // ── Scroll up ─────────────────────────────────────────────
+  document.getElementById('scroll-up-btn').addEventListener('click', () => {
+    inputSec.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // ── Share ──────────────────────────────────────────────────
+  document.getElementById('share-btn').addEventListener('click', shareChart);
+
+  // ── Form submit ────────────────────────────────────────────
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    hideError();
+    const params = readForm();
+    if (!validateForm(params)) return;
+    currentParams = params;
+    await runCalculation(params);
+  });
+
+  // ── Now button ─────────────────────────────────────────────
+  nowBtn.addEventListener('click', async function () {
+    hideError();
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('f-year').value  = now.getFullYear();
+    document.getElementById('f-month').value = now.getMonth() + 1;
+    document.getElementById('f-day').value   = now.getDate();
+    document.getElementById('f-hour').value  = now.getHours();
+    document.getElementById('f-min').value   = now.getMinutes();
+    document.getElementById('f-sec').value   = now.getSeconds();
+
+    const params = readForm();
+    params.name  = 'Transit — Now';
+    currentParams = params;
+    await runCalculation(params);
+  });
+
+  // ── Read form ──────────────────────────────────────────────
+  function readForm() {
+    return {
+      name:      document.getElementById('f-name').value.trim(),
+      latitude:  document.getElementById('f-lat').value,
+      longitude: document.getElementById('f-lon').value,
+      year:      document.getElementById('f-year').value,
+      month:     document.getElementById('f-month').value,
+      day:       document.getElementById('f-day').value,
+      hour:      document.getElementById('f-hour').value,
+      min:       document.getElementById('f-min').value,
+      sec:       document.getElementById('f-sec').value,
+      time_zone: document.getElementById('f-tz').value,
+      style:     currentStyle,
+    };
+  }
+
+  function validateForm(p) {
+    if (!p.latitude || !p.longitude) { showError('Please enter latitude and longitude.'); return false; }
+    if (!p.year || !p.month || !p.day) { showError('Please enter a complete date.'); return false; }
+    return true;
+  }
+
+  // ── Run full calculation ───────────────────────────────────
+  async function runCalculation(params) {
+    setLoading(true);
+    resultsSec.classList.add('hidden');
+
+    try {
+      const apiParams = buildApiParams(params);
+
+      const [chartResp] = await Promise.all([
+        fetch('/api/calculate?' + new URLSearchParams(apiParams)),
+      ]);
+
+      if (!chartResp.ok) {
+        const err = await chartResp.json().catch(() => ({}));
+        throw new Error(err.error || 'Calculation failed');
+      }
+
+      const json = await chartResp.json();
+      currentChartData = json.chart;
+
+      renderResults(params, json.chart);
+      resultsSec.classList.remove('hidden');
+      resultsSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      loadChartSvg(params, params.style);
+      updateUrlHash(params);
+
+    } catch (err) {
+      showError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Build API params ───────────────────────────────────────
+  function buildApiParams(p) {
+    return {
+      latitude:  p.latitude,
+      longitude: p.longitude,
+      year:      p.year,
+      month:     p.month,
+      day:       p.day,
+      hour:      p.hour,
+      min:       p.min,
+      sec:       p.sec,
+      time_zone: p.time_zone,
+      nesting:   1,
+    };
+  }
+
+  // ── Load SVG chart ─────────────────────────────────────────
+  async function loadChartSvg(params, style) {
+    const container = document.getElementById('chart-svg-container');
+    container.innerHTML = '<div class="chart-loading"><div class="spinner"></div><span>Rendering chart…</span></div>';
+
+    const svgParams = new URLSearchParams({
+      latitude:  params.latitude,
+      longitude: params.longitude,
+      year:      params.year,
+      month:     params.month,
+      day:       params.day,
+      hour:      params.hour,
+      min:       params.min,
+      sec:       params.sec,
+      time_zone: params.time_zone,
+      style:     style,
+      varga:     'D1',
+      size:      500,
+    });
+
+    try {
+      const resp = await fetch('/api/chart/svg?' + svgParams);
+      if (!resp.ok) throw new Error('SVG error');
+      const svgText = await resp.text();
+      container.innerHTML = svgText;
+
+      // Theme the SVG for dark mode
+      const svg = container.querySelector('svg');
+      if (svg) {
+        svg.style.maxWidth = '100%';
+        svg.style.height   = 'auto';
+        const rect = svg.querySelector('rect');
+        if (rect) rect.setAttribute('fill', '#16162e');
+        svg.querySelectorAll('polygon').forEach(p => {
+          p.style.stroke = '#3a3a68';
+          if (!p.getAttribute('fill') || p.getAttribute('fill') === 'rgb(255, 255, 255)') {
+            p.setAttribute('fill', '#16162e');
+          }
+        });
+        svg.querySelectorAll('text').forEach(t => {
+          t.setAttribute('fill', '#e2e2f0');
+        });
+      }
+    } catch (err) {
+      container.innerHTML = '<div class="chart-loading"><span style="color:var(--red)">Chart render failed</span></div>';
+    }
+  }
+
+  // ── Render results ─────────────────────────────────────────
+  function renderResults(params, chart) {
+    const name = params.name || 'Birth Chart';
+    document.getElementById('result-title').textContent = name;
+    document.getElementById('result-meta').textContent =
+      formatDate(params) + ' · ' + params.latitude + '°N, ' + params.longitude + '°E · UTC' + params.time_zone;
+
+    renderLagna(chart);
+    renderPlanets(chart);
+    renderDasha(chart);
+
+    // Sync chart style tabs with form style
+    document.querySelectorAll('.chart-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.style === params.style);
+    });
+  }
+
+  // ── Render lagna ───────────────────────────────────────────
+  function renderLagna(chart) {
+    const lg = (chart.lagna && chart.lagna['Lg']) || (chart.bhava && chart.bhava[1]);
+    if (!lg) return;
+
+    const rashi   = lg.rashi;
+    const deg     = lg.degree ? parseFloat(lg.degree).toFixed(2) : '—';
+    const signName = RASHI[rashi] || '—';
+    const symbol   = RASHI_SYMBOL[rashi] || '☽';
+    const nak      = lg.nakshatra ? (lg.nakshatra.name || '') : '';
+
+    document.getElementById('lagna-icon').textContent = symbol;
+    document.getElementById('lagna-sign').textContent = signName;
+    document.getElementById('lagna-deg').textContent  = deg + '° — ' + (RASHI[rashi] || '');
+    document.getElementById('lagna-nak').textContent  = nak || '';
+  }
+
+  // ── Render planets table ───────────────────────────────────
+  function renderPlanets(chart) {
+    const tbody = document.getElementById('planets-tbody');
+    tbody.innerHTML = '';
+
+    const graha = chart.graha || {};
+    const bhava = chart.bhava || {};
+
+    // Build rashi→house map
+    const rashiToHouse = {};
+    Object.entries(bhava).forEach(([h, b]) => { rashiToHouse[b.rashi] = parseInt(h); });
+
+    // Add lagna row
+    if (chart.lagna && chart.lagna['Lg']) {
+      const lg = chart.lagna['Lg'];
+      tbody.appendChild(makePlanetRow('Lg', 'Ascendant', lg, rashiToHouse, false));
+    }
+
+    // Add planets in canonical order
+    PLANET_ORDER.filter(k => k !== 'Lg').forEach(key => {
+      if (graha[key]) {
+        const retro = parseFloat(graha[key].speed || 0) < 0;
+        tbody.appendChild(makePlanetRow(key, GRAHA[key] || key, graha[key], rashiToHouse, retro));
+      }
+    });
+  }
+
+  function makePlanetRow(abbr, name, data, rashiToHouse, retro) {
+    const rashi    = data.rashi;
+    const degree   = data.degree ? parseFloat(data.degree).toFixed(2) : '—';
+    const house    = rashiToHouse[rashi] || '—';
+    const signName = RASHI[rashi] || '—';
+    const nak      = data.nakshatra ? (data.nakshatra.name || '') : '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <span class="planet-abbr">${abbr}</span>
+        <span class="planet-name">${name}</span>
+        ${retro ? '<span class="retro-badge">R</span>' : ''}
+      </td>
+      <td class="sign-text">${RASHI_SYMBOL[rashi] || ''} ${signName}</td>
+      <td class="deg-text">${degree}°</td>
+      <td><span class="house-badge">${house}</span></td>
+      <td class="nakshatra-text">${nak}</td>
+    `;
+    return tr;
+  }
+
+  // ── Render dasha ───────────────────────────────────────────
+  function renderDasha(chart) {
+    const dashaData = chart.dasha;
+    if (!dashaData || typeof dashaData !== 'object') return;
+
+    const tbody  = document.getElementById('dasha-tbody');
+    const today  = new Date();
+    tbody.innerHTML = '';
+
+    let currentEntry = null;
+
+    // Flatten top-level dasha entries (mahadasha lords as keys)
+    const entries = [];
+    Object.entries(dashaData).forEach(([lord, info]) => {
+      if (!info || typeof info !== 'object') return;
+      // Dasha library uses 'start'/'end' field names
+      const s = info.start || info.from;
+      const e = info.end   || info.to;
+      if (s && e) {
+        entries.push({ lord, from: new Date(s), to: new Date(e), info });
+      }
+    });
+
+    // Sort by start date
+    entries.sort((a, b) => a.from - b.from);
+
+    entries.forEach(({ lord, from, to }) => {
+      const isCurrent = today >= from && today <= to;
+      if (isCurrent) currentEntry = { lord, from, to };
+
+      const years = ((to - from) / (1000 * 60 * 60 * 24 * 365.25)).toFixed(1);
+      const tr    = document.createElement('tr');
+      if (isCurrent) tr.style.background = 'rgba(200,168,75,0.07)';
+
+      tr.innerHTML = `
+        <td>
+          <span class="planet-abbr" ${isCurrent ? 'style="color:var(--gold)"' : ''}>${lord}</span>
+          <span class="planet-name">${GRAHA[lord] || lord}</span>
+          ${isCurrent ? '<span class="retro-badge" style="background:rgba(200,168,75,0.15);color:var(--gold)">NOW</span>' : ''}
+        </td>
+        <td class="deg-text">${formatShortDate(from)}</td>
+        <td class="deg-text">${formatShortDate(to)}</td>
+        <td class="text-muted">${years} yr</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Current dasha banner
+    if (currentEntry) {
+      const { lord, from, to } = currentEntry;
+      const total    = to - from;
+      const elapsed  = today - from;
+      const pct      = Math.min(100, Math.max(0, (elapsed / total) * 100)).toFixed(1);
+
+      document.getElementById('dasha-current-banner').style.display = 'flex';
+      document.getElementById('dasha-lord-abbr').textContent   = lord;
+      document.getElementById('dasha-lord-name').textContent   = (GRAHA[lord] || lord) + ' Mahadasha';
+      document.getElementById('dasha-lord-period').textContent = formatShortDate(from) + ' → ' + formatShortDate(to);
+      document.getElementById('dasha-progress').style.width    = pct + '%';
+      document.getElementById('current-dasha-label').textContent = lord + ' · ' + pct + '% elapsed';
+    }
+  }
+
+  // ── Share ──────────────────────────────────────────────────
+  function shareChart() {
+    if (!currentParams) return;
+    const url = buildShareUrl(currentParams);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard!'));
+    } else {
+      prompt('Copy this link:', url);
+    }
+  }
+
+  function buildShareUrl(p) {
+    const hash = new URLSearchParams({
+      n: p.name || '',
+      lat: p.latitude, lon: p.longitude,
+      y: p.year, mo: p.month, d: p.day,
+      h: p.hour, mi: p.min, s: p.sec,
+      tz: p.time_zone,
+      st: p.style,
+    });
+    return window.location.origin + '/#' + hash.toString();
+  }
+
+  function updateUrlHash(p) {
+    const hash = new URLSearchParams({
+      n: p.name || '', lat: p.latitude, lon: p.longitude,
+      y: p.year, mo: p.month, d: p.day,
+      h: p.hour, mi: p.min, s: p.sec,
+      tz: p.time_zone, st: p.style,
+    });
+    history.replaceState(null, '', '#' + hash.toString());
+  }
+
+  // ── Load from URL hash ─────────────────────────────────────
+  function loadFromHash() {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    try {
+      const p = new URLSearchParams(hash);
+      const get = k => p.get(k);
+      if (!get('lat') || !get('y')) return;
+
+      document.getElementById('f-name').value  = get('n')  || '';
+      document.getElementById('f-lat').value   = get('lat');
+      document.getElementById('f-lon').value   = get('lon');
+      document.getElementById('f-year').value  = get('y');
+      document.getElementById('f-month').value = get('mo');
+      document.getElementById('f-day').value   = get('d');
+      document.getElementById('f-hour').value  = get('h');
+      document.getElementById('f-min').value   = get('mi');
+      document.getElementById('f-sec').value   = get('s')  || '0';
+
+      const tz = get('tz');
+      if (tz) document.getElementById('f-tz').value = tz;
+
+      const st = get('st') || 'north';
+      currentStyle = st;
+      document.querySelectorAll('.style-btn').forEach(b => b.classList.toggle('active', b.dataset.style === st));
+
+      const params = readForm();
+      params.name  = get('n') || '';
+      currentParams = params;
+      runCalculation(params);
+    } catch (e) { /* ignore bad hash */ }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────
+  function setLoading(on) {
+    calcBtn.disabled        = on;
+    calcSpinner.style.display = on ? 'block' : 'none';
+    calcBtnText.textContent = on ? 'Calculating…' : 'Calculate Chart';
+  }
+
+  function showError(msg) {
+    errorBanner.textContent = '⚠ ' + msg;
+    errorBanner.classList.add('show');
+  }
+
+  function hideError() {
+    errorBanner.classList.remove('show');
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function formatDate(p) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return (months[parseInt(p.month) - 1] || p.month) + ' ' + p.day + ', ' + p.year +
+           '  ' + String(p.hour).padStart(2,'0') + ':' + String(p.min).padStart(2,'0');
+  }
+
+  function formatShortDate(d) {
+    if (!(d instanceof Date)) d = new Date(d);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // ── Service Worker ─────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
+  // ── Init ───────────────────────────────────────────────────
+  loadFromHash();
+
+})();
+</script>
+</body>
+</html>

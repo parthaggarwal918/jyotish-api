@@ -121,4 +121,13 @@ class Draw
     public function render() {
         $this->Renderer->render();
     }
+
+    /**
+     * Return the drawing content as a string.
+     * 
+     * @return string
+     */
+    public function getContent(): string {
+        return $this->Renderer->getContent();
+    }
 }

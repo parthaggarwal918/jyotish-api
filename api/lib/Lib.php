@@ -117,6 +117,37 @@ class Lib
         );
     }
 
+    public function buildData(array $params): Data
+    {
+        $locality = new Locality([
+            'longitude' => $params['longitude'],
+            'latitude'  => $params['latitude'],
+            'altitude'  => 0,
+        ]);
+
+        $time_zone = $params['time_zone'] ?? '+03:30';
+        $dst_hour  = $params['dst_hour']  ?? 0;
+        $dst_min   = $params['dst_min']   ?? 0;
+        $vargas    = $params['varga']      ?? ['D1'];
+
+        $datetime = sprintf(
+            "%s-%s-%s %s:%s:%s%s",
+            $params['year'], $params['month'], $params['day'],
+            $params['hour'], $params['min'],   $params['sec'],
+            $time_zone
+        );
+        $date = new DateTime($datetime);
+        $date->modify(sprintf("-%s hours",   $dst_hour));
+        $date->modify(sprintf("-%s minutes", $dst_min));
+
+        $ganita = new Swetest(["swetest" => SWETEST_PATH]);
+        $data   = new Data($date, $locality, $ganita);
+        $data->calcVargaData($vargas);
+        $data->calcParams();
+
+        return $data;
+    }
+
     public function getNearestTimezone($cur_lat, $cur_long, $country_code = null)
     {
         static $locationCache = [];
