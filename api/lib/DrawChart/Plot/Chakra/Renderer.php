@@ -123,7 +123,7 @@ class Renderer
     {
         $options = $this->getOptions();
         
-        if (isset($options['labelRashiFont'])) {
+        if (is_array($options['labelRashiFont'])) {
             $this->Renderer->setOptions($options['labelRashiFont']);
         }
         
@@ -150,9 +150,9 @@ class Renderer
         $bodyLabelPoints = $this->Chakra->getBodyLabelPoints($x, $y, $options);
         
         foreach ($bodyLabelPoints as $body => $point) {
-            if (!array_key_exists($body, Graha::$graha) && isset($options['labelExtraFont'])) {
+            if (!array_key_exists($body, Graha::$graha) && is_array($options['labelExtraFont'])) {
                 $this->Renderer->setOptions($options['labelExtraFont']);
-            } elseif (isset($options['labelGrahaFont'])) {
+            } elseif (is_array($options['labelGrahaFont'])) {
                 $this->Renderer->setOptions($options['labelGrahaFont']);
             }
             

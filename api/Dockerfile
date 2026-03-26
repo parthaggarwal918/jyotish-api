@@ -37,8 +37,9 @@ RUN mkdir -p var/cache var/log && \
     chmod -R 777 var
 
 RUN composer dump-autoload --no-dev --optimize && \
-    php bin/console assets:install --symlink && \
-    php bin/console cache:clear
+    APP_ENV=prod php bin/console assets:install --symlink && \
+    APP_ENV=prod php bin/console cache:clear && \
+    APP_ENV=prod php bin/console cache:warmup --no-optional-warmers
 
 # ============================================================
 # Stage 2: Runtime — minimal PHP-FPM + nginx, no build tools

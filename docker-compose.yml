@@ -9,6 +9,8 @@ services:
       - "127.0.0.1:${HOST_PORT:-9393}:8080"
     env_file:
       - ./api/.env
+    environment:
+      APP_ENV: prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/ping"]
       interval: 30s
