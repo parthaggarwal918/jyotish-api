@@ -1,7 +1,7 @@
 # ============================================================
 # Stage 1: Builder — install deps, compile swetest, warm cache
 # ============================================================
-FROM php:7.4-fpm AS builder
+FROM public.ecr.aws/docker/library/php:7.4-fpm AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -44,7 +44,7 @@ RUN composer dump-autoload --no-dev --optimize && \
 # ============================================================
 # Stage 2: Runtime — minimal PHP-FPM + nginx, no build tools
 # ============================================================
-FROM php:7.4-fpm AS runtime
+FROM public.ecr.aws/docker/library/php:7.4-fpm AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
