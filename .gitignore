@@ -13,7 +13,7 @@ nbproject
 
 # composer vendor dir
 vendor
-composer.lock
+# composer.lock intentionally committed — pins dependencies to known-good versions
 
 # local phpunit config
 phpunit.xml

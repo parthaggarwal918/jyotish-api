@@ -1,7 +1,7 @@
 # ============================================================
 # Stage 1: Builder — install deps, compile swetest, warm cache
 # ============================================================
-FROM public.ecr.aws/docker/library/php:7.4-fpm AS builder
+FROM public.ecr.aws/docker/library/php:8.1-fpm AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -44,7 +44,7 @@ RUN composer dump-autoload --no-dev --optimize && \
 # ============================================================
 # Stage 2: Runtime — minimal PHP-FPM + nginx, no build tools
 # ============================================================
-FROM public.ecr.aws/docker/library/php:7.4-fpm AS runtime
+FROM public.ecr.aws/docker/library/php:8.1-fpm AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -53,7 +53,7 @@ WORKDIR /var/www/api
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
     nginx curl \
-    libzip4 libicu67 libonig5 libpng16-16 \
+    libzip4 libicu72 libonig5 libpng16-16 \
     libfreetype6 libjpeg62-turbo libxml2 libcurl4 && \
     rm -rf /var/lib/apt/lists/*
 
