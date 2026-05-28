@@ -24,7 +24,7 @@ RUN curl -sS https://getcomposer.org/installer | \
     php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY composer.json composer.lock* ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction && \
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts && \
     composer clear-cache
 
 COPY . .
